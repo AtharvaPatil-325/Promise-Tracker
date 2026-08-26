@@ -46,18 +46,12 @@ promisetracker/
 
 - Java 21+
 - Node.js 20+
-- PostgreSQL 16
+- PostgreSQL 16 (or use embedded H2 for dev)
 - Docker & Docker Compose (optional for containerized deployment)
 
 ### 1. Database Setup
 
-Ensure PostgreSQL is running locally with database `promisetracker`:
-
-```sql
-CREATE DATABASE promisetracker;
-CREATE USER promisetracker WITH PASSWORD 'promisetracker_secret_pass';
-GRANT ALL PRIVILEGES ON DATABASE promisetracker TO promisetracker;
-```
+For local development, the backend uses an embedded H2 database automatically. No PostgreSQL setup required.
 
 ### 2. Run Backend API
 
