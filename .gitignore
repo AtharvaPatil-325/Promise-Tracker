@@ -1,0 +1,33 @@
+# IDE & Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Java & Maven
+target/
+*.jar
+*.war
+.mvn/
+
+# Node & Frontend / Extension
+node_modules/
+dist/
+.output/
+.npm
+*.log
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Database
+*.db
+*.sqlite
