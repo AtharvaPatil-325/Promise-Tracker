@@ -1,9 +1,14 @@
 import axios from 'axios';
 
-let accessToken: string | null = null;
+let accessToken: string | null = localStorage.getItem('accessToken');
 
 export const setAccessToken = (token: string | null) => {
   accessToken = token;
+  if (token) {
+    localStorage.setItem('accessToken', token);
+  } else {
+    localStorage.removeItem('accessToken');
+  }
 };
 
 export const getAccessToken = () => accessToken;
@@ -40,6 +45,7 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
       } catch (refreshErr) {
         setAccessToken(null);
+        localStorage.removeItem('user');
         window.location.href = '/login';
         return Promise.reject(refreshErr);
       }

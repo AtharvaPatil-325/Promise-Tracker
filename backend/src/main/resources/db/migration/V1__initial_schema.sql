@@ -1,6 +1,6 @@
 -- Organizations
 CREATE TABLE IF NOT EXISTS organizations (
-    id          UUID DEFAULT random_uuid() PRIMARY KEY,
+    id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     name        VARCHAR(200) NOT NULL,
     created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS organizations (
 
 -- Users
 CREATE TABLE IF NOT EXISTS users (
-    id              UUID DEFAULT random_uuid() PRIMARY KEY,
+    id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     organization_id UUID NOT NULL REFERENCES organizations(id),
     email           VARCHAR(255) NOT NULL,
     password_hash   VARCHAR(255) NOT NULL,
@@ -27,7 +27,7 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
 -- Refresh tokens
 CREATE TABLE IF NOT EXISTS refresh_tokens (
-    id          UUID DEFAULT random_uuid() PRIMARY KEY,
+    id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     token_hash  VARCHAR(255) NOT NULL UNIQUE,
     expires_at  TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -40,7 +40,7 @@ CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token_hash ON refresh_tokens(token
 
 -- Customers
 CREATE TABLE IF NOT EXISTS customers (
-    id              UUID DEFAULT random_uuid() PRIMARY KEY,
+    id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     organization_id UUID NOT NULL REFERENCES organizations(id),
     name            VARCHAR(200) NOT NULL,
     email           VARCHAR(255),
@@ -57,7 +57,7 @@ CREATE INDEX IF NOT EXISTS idx_customers_deleted_at ON customers(deleted_at);
 
 -- Promises
 CREATE TABLE IF NOT EXISTS promises (
-    id              UUID DEFAULT random_uuid() PRIMARY KEY,
+    id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     organization_id UUID NOT NULL REFERENCES organizations(id),
     customer_id     UUID NOT NULL REFERENCES customers(id),
     created_by      UUID NOT NULL REFERENCES users(id),
@@ -82,7 +82,7 @@ CREATE INDEX IF NOT EXISTS idx_promises_deleted_at ON promises(deleted_at);
 
 -- Promise activity (audit trail)
 CREATE TABLE IF NOT EXISTS promise_activities (
-    id              UUID DEFAULT random_uuid() PRIMARY KEY,
+    id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     promise_id      UUID NOT NULL REFERENCES promises(id),
     organization_id UUID NOT NULL REFERENCES organizations(id),
     user_id         UUID NOT NULL REFERENCES users(id),

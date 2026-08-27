@@ -3,10 +3,12 @@ package com.promisetracker.user;
 import com.promisetracker.authentication.dto.UserResponse;
 import com.promisetracker.common.response.ApiResponse;
 import com.promisetracker.security.SecurityUtils;
+import com.promisetracker.user.dto.CreateUserRequest;
 import com.promisetracker.user.dto.UpdateUserRoleRequest;
 import com.promisetracker.user.dto.UpdateUserStatusRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +35,16 @@ public class UserController {
         UUID orgId = SecurityUtils.getCurrentOrganizationId();
         UserResponse user = userService.getUserById(orgId, id);
         return ResponseEntity.ok(ApiResponse.success(user));
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<UserResponse>> createUser(
+            @Valid @RequestBody CreateUserRequest request) {
+
+        UUID orgId = SecurityUtils.getCurrentOrganizationId();
+        UserResponse user = userService.createUser(orgId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(user, "Team member added successfully"));
     }
 
     @PatchMapping("/{id}/role")

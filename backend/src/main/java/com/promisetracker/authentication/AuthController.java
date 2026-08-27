@@ -7,6 +7,7 @@ import com.promisetracker.authentication.dto.RegisterRequest;
 import com.promisetracker.common.response.ApiResponse;
 import com.promisetracker.config.JwtProperties;
 import com.promisetracker.security.SecurityUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,18 +38,20 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(
             @Valid @RequestBody RegisterRequest request,
+            HttpServletRequest httpRequest,
             HttpServletResponse response) {
         AuthService.AuthResult result = authService.register(request);
-        addRefreshTokenCookie(response, result.refreshToken());
+        addRefreshTokenCookie(httpRequest, response, result.refreshToken());
         return ResponseEntity.ok(ApiResponse.success(result.response(), "Registration successful"));
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(
             @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest,
             HttpServletResponse response) {
         AuthService.AuthResult result = authService.login(request);
-        addRefreshTokenCookie(response, result.refreshToken());
+        addRefreshTokenCookie(httpRequest, response, result.refreshToken());
         return ResponseEntity.ok(ApiResponse.success(result.response(), "Login successful"));
     }
 
@@ -56,17 +59,20 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> refresh(
             @CookieValue(name = REFRESH_TOKEN_COOKIE, required = false) String cookieToken,
             @RequestBody(required = false) RefreshRequest request,
+            HttpServletRequest httpRequest,
             HttpServletResponse response) {
         String refreshToken = resolveRefreshToken(cookieToken, request);
         AuthService.AuthResult result = authService.refresh(refreshToken);
-        addRefreshTokenCookie(response, result.refreshToken());
+        addRefreshTokenCookie(httpRequest, response, result.refreshToken());
         return ResponseEntity.ok(ApiResponse.success(result.response(), "Token refreshed"));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<Void>> logout(
+            HttpServletRequest httpRequest,
+            HttpServletResponse response) {
         authService.logout(SecurityUtils.getCurrentUserId());
-        clearRefreshTokenCookie(response);
+        clearRefreshTokenCookie(httpRequest, response);
         return ResponseEntity.ok(ApiResponse.success(null, "Logged out successfully"));
     }
 
@@ -80,22 +86,24 @@ public class AuthController {
         throw new BadCredentialsException("Refresh token is required");
     }
 
-    private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+    private void addRefreshTokenCookie(HttpServletRequest request, HttpServletResponse response, String refreshToken) {
+        boolean isSecure = request.isSecure();
         ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE, refreshToken)
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
+                .secure(isSecure)
+                .sameSite(isSecure ? "Strict" : "Lax")
                 .path(AUTH_COOKIE_PATH)
                 .maxAge(Duration.ofMillis(jwtProperties.getRefreshTokenExpirationMs()))
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
-    private void clearRefreshTokenCookie(HttpServletResponse response) {
+    private void clearRefreshTokenCookie(HttpServletRequest request, HttpServletResponse response) {
+        boolean isSecure = request.isSecure();
         ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE, "")
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
+                .secure(isSecure)
+                .sameSite(isSecure ? "Strict" : "Lax")
                 .path(AUTH_COOKIE_PATH)
                 .maxAge(0)
                 .build();

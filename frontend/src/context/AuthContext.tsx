@@ -13,7 +13,18 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const stored = localStorage.getItem('user');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
+
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -24,9 +35,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const currentUser = res.data.data.user;
         setAccessToken(token);
         setUser(currentUser);
+        localStorage.setItem('user', JSON.stringify(currentUser));
       } catch (err) {
-        setAccessToken(null);
-        setUser(null);
+        // If refresh fails but we don't have stored token/user, reset state
+        if (!localStorage.getItem('accessToken')) {
+          setAccessToken(null);
+          setUser(null);
+          localStorage.removeItem('user');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -37,6 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = (token: string, userData: User) => {
     setAccessToken(token);
     setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const logout = async () => {
@@ -47,6 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setAccessToken(null);
       setUser(null);
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
   };

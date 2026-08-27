@@ -21,8 +21,8 @@ public interface PromiseRepository extends JpaRepository<Promise, UUID> {
            "AND (:priority IS NULL OR p.priority = :priority) " +
            "AND (:assignedTo IS NULL OR p.assignedTo.id = :assignedTo) " +
            "AND (:customerId IS NULL OR p.customer.id = :customerId) " +
-           "AND (:search IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%')) " +
-           "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND (CAST(:search AS string) IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')) " +
+           "OR LOWER(p.description) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%'))) " +
            "AND (:dueDateFrom IS NULL OR p.dueDate >= :dueDateFrom) " +
            "AND (:dueDateTo IS NULL OR p.dueDate <= :dueDateTo)")
     Page<Promise> findByFilters(@Param("orgId") UUID organizationId,
