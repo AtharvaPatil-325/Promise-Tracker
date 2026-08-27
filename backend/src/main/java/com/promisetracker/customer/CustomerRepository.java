@@ -15,9 +15,9 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
     Optional<Customer> findByIdAndOrganizationId(@Param("id") UUID id, @Param("orgId") UUID organizationId);
 
     @Query("SELECT c FROM Customer c WHERE c.organization.id = :orgId AND c.deletedAt IS NULL " +
-           "AND (:search IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
-           "OR LOWER(c.email) LIKE LOWER(CONCAT('%', :search, '%')) " +
-           "OR LOWER(c.companyName) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "AND (CAST(:search AS string) IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')) " +
+           "OR LOWER(c.email) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')) " +
+           "OR LOWER(c.companyName) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')))")
     Page<Customer> findByOrganizationIdAndSearch(@Param("orgId") UUID organizationId,
                                                   @Param("search") String search,
                                                   Pageable pageable);
