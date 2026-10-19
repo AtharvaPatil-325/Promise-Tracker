@@ -1,7 +1,7 @@
-$repo = 'C:\Users\ankii\Promise'
+$repo = $PSScriptRoot
 $backendDir = Join-Path $repo 'backend'
 $frontendDir = Join-Path $repo 'frontend'
-$mvnPath = Join-Path $HOME 'maven\apache-maven-3.9.16\bin\mvn.cmd'
+$mvnPath = if (Get-Command mvn -ErrorAction SilentlyContinue) { 'mvn' } else { Join-Path $HOME 'maven\apache-maven-3.9.16\bin\mvn.cmd' }
 
 $portProcess = Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue |
     Select-Object -ExpandProperty OwningProcess -Unique
